@@ -12,4 +12,4 @@ The shiny app can be found at the following link: https://joelkcamp.shinyapps.io
 
 #### Data
 
-The data used for this assignment was downloaded from the Consortium of Pacific Northwest Herbaria (https://www.pnwherbaria.org). The exact data set is loaded into the shiny app through a helper function from the following link: https://www.pnwherbaria.org/data/getdataset.php?File=UBC_Fungi_Native.zip
+The data used for this assignment was downloaded from the Consortium of Pacific Northwest Herbaria (https://www.pnwherbaria.org). The exact data set is loaded into the shiny app through a helper function using the following link: https://www.pnwherbaria.org/data/getdataset.php?File=UBC_Fungi_Native.zip
