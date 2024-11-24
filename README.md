@@ -5,7 +5,7 @@
 
 This github repository is for STAT 545B assignment b3.
 
-This assignment consists of the creation of a shiny app that provides a quick and convenient method for the exploration of a UBC curated fungi dataset. This includes the ability to filter and sort the data, and a auto-updating count of the total number of results based on the filters chosen.
+This assignment consists of the creation of a shiny app that provides a quick and convenient method for the exploration of a UBC curated fungi dataset. This includes the ability to filter and sort the data, and an auto-updating count of the total number of results based on the filters chosen.
 
 The shiny app can be found at the following link: https://joelkcamp.shinyapps.io/UBCFungi/
 
