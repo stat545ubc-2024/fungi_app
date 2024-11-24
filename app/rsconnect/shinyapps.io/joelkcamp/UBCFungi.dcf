@@ -1,0 +1,12 @@
+name: UBCFungi
+title: UBCFungi
+username: joelkcamp
+account: joelkcamp
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 13434080
+bundleId: 9407548
+url: https://joelkcamp.shinyapps.io/UBCFungi/
+version: 1
+asMultiple: FALSE
+asStatic: FALSE
