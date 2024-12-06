@@ -18,6 +18,8 @@ For assignment b4 I have added a multitude of features, including:
 - an updated theme using a .css file
 - a small image in the title row
 
+This updated shiny app can be found at the following link: https://joelkcamp.shinyapps.io/UBCFungi2/
+
 
 #### Data
 
