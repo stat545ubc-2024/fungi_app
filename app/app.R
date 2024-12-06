@@ -3,7 +3,6 @@ library(dplyr)
 library(ggplot2)
 library(webshot)
 library(htmlwidgets)
-library(shinythemes)
 library(wordcloud2)
 
 #### Helper Functions ####
@@ -50,7 +49,7 @@ generate_bar_chart <- function(data, column) {
 
   # generate the plot
   ggplot(df, aes(x = reorder(word, -freq), y = freq)) +
-    geom_bar(stat = "identity", fill = "steelblue") +
+    geom_bar(stat = "identity", fill = "#556b2f") +
     theme_minimal() +
     labs(title = paste("Counts of the Top Selections", column),
          x = column,
@@ -70,11 +69,15 @@ url <- "https://www.pnwherbaria.org/data/getdataset.php?File=UBC_Fungi_Native.zi
 #### UI ####
 
 ui <- fluidPage(
-  theme = shinytheme("cerulean"),
-  titlePanel("UBC Fungi Native Dataset Summary"),
+  includeCSS("www/theme.css"),
+  fluidRow(
+    column(2, img(src = "fungi_image.png", height = 80)),
+    column(10, h2("UBC Fungi Native Dataset Summary"))
+  ),
 
   sidebarLayout(
     sidebarPanel(
+      class = "sidebar",
       helpText("Filter the dataset using one or more of the following columns"),
       br(),
       textInput("occurrence_id", "Search by OccurenceID:", ""),
@@ -91,6 +94,7 @@ ui <- fluidPage(
 
     ),
     mainPanel(
+      class = "main-content",
       tabsetPanel(
         id = "tabset1",
         tabPanel(
@@ -112,7 +116,7 @@ ui <- fluidPage(
             column(4,
               selectInput(
                 "visual_column",
-                "Choose column for word cloud:",
+                "Choose column:",
                 choices = c("Genus", "SpecificEpithet"))
             ),
             column(4,
@@ -270,14 +274,14 @@ server <- function(input, output) {
 
         temp_file <- tempfile(fileext = ".html")
         data <- filter_data()
-        generate_word_cloud(data, input$visual_column)
-        file.copy(temp_file, file)
+        saveWidget(generate_word_cloud(data, input$visual_column), file = temp_file, selfcontained = TRUE)
+        webshot(temp_file, file = file, vwidth = 800, vheight = 600, cliprect = "viewport")
 
       } else if (input$viz_type == "Bar Chart") {
 
         png(file)
         data <- filter_data()
-        generate_bar_chart(data, input$visual_column)
+        print(generate_bar_chart(data, input$visual_column))
         dev.off()
 
       }
