@@ -1,7 +1,7 @@
 library(shiny)
 library(dplyr)
 library(ggplot2)
-library(webshot)
+library(webshot2)
 library(htmlwidgets)
 library(wordcloud2)
 
@@ -275,7 +275,7 @@ server <- function(input, output) {
         temp_file <- tempfile(fileext = ".html")
         data <- filter_data()
         saveWidget(generate_word_cloud(data, input$visual_column), file = temp_file, selfcontained = TRUE)
-        webshot(temp_file, file = file, vwidth = 800, vheight = 600, cliprect = "viewport")
+        webshot2::webshot(temp_file, file = file, vwidth = 800, vheight = 600)
 
       } else if (input$viz_type == "Bar Chart") {
 
