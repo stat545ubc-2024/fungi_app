@@ -14,7 +14,7 @@ The shiny app can be found at the following link: https://joelkcamp.shinyapps.io
 For assignment b4 I have added a multitude of features, including:
 - a separate tab for data visualization
 - two visualization methods (word cloud and bar chart)
-- the capability to download the visualizations as png files
+- the capability to download the visualizations as png files (note that the word cloud visualization function is not current working on the published app, only remotely)
 - an updated theme using a .css file
 - a small image in the title row
 
