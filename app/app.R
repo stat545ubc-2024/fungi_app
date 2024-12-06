@@ -1,7 +1,12 @@
 library(shiny)
 library(dplyr)
+library(ggplot2)
+library(webshot)
+library(htmlwidgets)
 library(shinythemes)
+library(wordcloud2)
 
+#### Helper Functions ####
 
 # a simple helper function to scrape the chosen data set from the website that is hosting it
 scrape_dataset <- function(url) {
@@ -29,7 +34,40 @@ scrape_dataset <- function(url) {
   return(data)
 }
 
+# a helper function for generating a wordcloud
+generate_word_cloud <- function(data, column) {
+  word_freq <- table(data[[column]])
+  wordcloud2(data.frame(word = names(word_freq), freq = as.numeric(word_freq)))
+}
+
+# a helper function for generating a bar chart
+generate_bar_chart <- function(data, column) {
+  word_freq <- table(data[[column]])
+  word_freq <- head(sort(word_freq, decreasing = TRUE), 10)
+
+  # change the table to a data frame
+  df <- data.frame(word = names(word_freq), freq = as.numeric(word_freq))
+
+  # generate the plot
+  ggplot(df, aes(x = reorder(word, -freq), y = freq)) +
+    geom_bar(stat = "identity", fill = "steelblue") +
+    theme_minimal() +
+    labs(title = paste("Counts of the Top Selections", column),
+         x = column,
+         y = "Frequency") +
+    theme(
+      axis.text.x = element_text(size = 12),
+      axis.text.y = element_text(size = 12),
+      plot.title = element_text(size = 16, face = "bold"),
+      axis.title.x = element_text(size = 14),
+      axis.title.y = element_text(size = 14)
+    ) +
+    coord_flip()
+}
+
 url <- "https://www.pnwherbaria.org/data/getdataset.php?File=UBC_Fungi_Native.zip"
+
+#### UI ####
 
 ui <- fluidPage(
   theme = shinytheme("cerulean"),
@@ -53,16 +91,49 @@ ui <- fluidPage(
 
     ),
     mainPanel(
-      textOutput("count"),
+      tabsetPanel(
+        id = "tabset1",
+        tabPanel(
+          "Data Table",
+          textOutput("count"),
 
-      div(
-        style = "overflow-x: auto; overflow-y: auto; height: 600px; width: 100%;",
-        tableOutput("table")
+          div(
+            style = "overflow-x: auto; overflow-y: auto; height: 600px; width: 100%;",
+            tableOutput("table")
+          )
+        ),
+        tabPanel(
+          "Data Visualization",
+          fluidRow(
+            column(4,
+              radioButtons("viz_type", "Choose visualization:",
+                           choices = c("Word Cloud", "Bar Chart"))
+            ),
+            column(4,
+              selectInput(
+                "visual_column",
+                "Choose column for word cloud:",
+                choices = c("Genus", "SpecificEpithet"))
+            ),
+            column(4,
+              downloadButton("downloadVisual", "Download Visualization"))
+          ),
+
+          conditionalPanel(
+            condition = "input.viz_type == 'Word Cloud'",
+            wordcloud2Output("wordcloud", width = "100%", height = "600px")
+          ),
+          conditionalPanel(
+            condition = "input.viz_type == 'Bar Chart'",
+            plotOutput("barchart")
+          )
+        )
       )
-      #tableOutput("table")
     )
   )
 )
+
+#### Server ####
 
 server <- function(input, output) {
   # loading the data reactively from the url chosen above
@@ -99,7 +170,7 @@ server <- function(input, output) {
     # filter based on the Genus
     if (input$genus != "") {
       filtered_data <- filtered_data %>%
-        filter(grepl(input$genus, Genus, ignore.case = TRUE))
+        filter(grepl(tolower(input$genus), tolower(Genus)))
     }
 
     # filter based on the YearCollected
@@ -145,6 +216,72 @@ server <- function(input, output) {
     dataset <- sort_data()
     head(dataset, 1000)
   })
+
+  # feature: creates a word cloud of the most commonly used words, which can help
+  # with the visualization of the number of each genus and species found given
+  # the selected
+  output$wordcloud <- renderWordcloud2({
+    # check that the Word Cloud option is selected or return NULL
+    if(input$viz_type != "Word Cloud") {
+      return(NULL)
+    }
+
+    data <- filter_data()
+
+    # check if the above data is empty
+    if (length(data) == 0) {
+      return(NULL)
+    }
+
+   generate_word_cloud(data, input$visual_column)
+  })
+
+  # feature: creates a bar chart that displays the counts of the 10 most common
+  # selected outputs given the filtering criteria
+  output$barchart <- renderPlot({
+    # check that the bar chart option is selected, or return NULL
+    if (input$viz_type != "Bar Chart") {
+      return(NULL)
+    }
+
+    data <- filter_data()
+
+    if (length(data) == 0) {
+      return(NULL)
+    }
+
+    generate_bar_chart(data, input$visual_column)
+  })
+
+  # feature: download the generated visualization
+  output$downloadVisual <- downloadHandler(
+    # determine the file name based on whether or not a word cloud or bar chart
+    # is currently generated
+    filename = function() {
+      if (input$viz_type == "Word Cloud") {
+        paste("word_cloud_", Sys.Date(), ".png", sep = "")
+      } else {
+        paste("bar_chart_", Sys.Date(), ".png", sep = "")
+      }
+    },
+    content = function(file) {
+      if (input$viz_type == "Word Cloud") {
+
+        temp_file <- tempfile(fileext = ".html")
+        data <- filter_data()
+        generate_word_cloud(data, input$visual_column)
+        file.copy(temp_file, file)
+
+      } else if (input$viz_type == "Bar Chart") {
+
+        png(file)
+        data <- filter_data()
+        generate_bar_chart(data, input$visual_column)
+        dev.off()
+
+      }
+    }
+  )
 }
 
 shinyApp(ui, server)
