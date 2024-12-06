@@ -198,6 +198,7 @@ server <- function(input, output) {
         arrange(!!column_name)
     }
 
+
     return(sorted_data)
   })
 
