@@ -264,7 +264,7 @@ server <- function(input, output) {
     # is currently generated
     filename = function() {
       if (input$viz_type == "Word Cloud") {
-        paste("word_cloud_", Sys.Date(), ".png", sep = "")
+        paste("word_cloud_", Sys.Date(), ".html", sep = "")
       } else {
         paste("bar_chart_", Sys.Date(), ".png", sep = "")
       }
@@ -272,10 +272,8 @@ server <- function(input, output) {
     content = function(file) {
       if (input$viz_type == "Word Cloud") {
 
-        temp_file <- tempfile(fileext = ".html")
         data <- filter_data()
-        saveWidget(generate_word_cloud(data, input$visual_column), file = temp_file, selfcontained = TRUE)
-        webshot2::webshot(temp_file, file = file, vwidth = 800, vheight = 600)
+        saveWidget(generate_word_cloud(data, input$visual_column), file = file, selfcontained = TRUE)
 
       } else if (input$viz_type == "Bar Chart") {
 
